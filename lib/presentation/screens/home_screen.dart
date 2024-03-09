@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -29,9 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final scrollController = ScrollController(); //? scroll controller
 
-  bool isScrollingUp = false;
-  bool isExtendedWeatherVisible = false;
-  bool needsScroll = true; //? if didn't scroll yet -> true
+  bool isScrollingUp = true;
 
   @override
   void didChangeDependencies() {
@@ -130,24 +129,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   void onScroll() {
-  if (scrollController.position.userScrollDirection == ScrollDirection.reverse) {
-    setState(() {
-      isScrollingUp = true;
-      isExtendedWeatherVisible = false;
-    });
-  } else if (scrollController.position.userScrollDirection == ScrollDirection.forward) {
+   if (scrollController.position.userScrollDirection == ScrollDirection.forward) {
     setState(() {
       isScrollingUp = false;
-      isExtendedWeatherVisible = true;
     });
   } else if (scrollController.position.userScrollDirection == ScrollDirection.idle) {
     if (scrollController.offset <= 0) {
       setState(() {
-        isExtendedWeatherVisible = false;
+        isScrollingUp = true;
       });
     } else if (scrollController.offset >= scrollController.position.maxScrollExtent) {
       setState(() {
-        isExtendedWeatherVisible = true;
+        isScrollingUp = false;
       });
     }
   }
@@ -156,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final textStyles = Theme.of(context).textTheme;
-    
+
     _weatherBgProvider = Provider.of<WeatherBgProvider>(context);
 
     if (weatherHomeScreen == null) {
@@ -174,11 +167,25 @@ class _HomeScreenState extends State<HomeScreen> {
         isDay = false;
       }
       return Scaffold (
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          actions: [
+            IconButton(
+              onPressed: () => context.go('/mapScren'), 
+              icon: const Padding(
+                padding: EdgeInsets.only(right: 20, top: 18),
+                child: Icon(Icons.map_outlined, size: 35),
+              )
+            )
+          ],
+        ),
+        backgroundColor: _weatherBgProvider.setBgColor,
         body: RefreshIndicator(
           key: _refreshIndicatorKey,
           onRefresh: _handleRefresh,
           displacement: 65,
           child: ListView(
+            
             controller: scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
@@ -306,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 
                             ],
                           ),
-                          needsScroll ? const Align(
+                          isScrollingUp ? const Align(
                             widthFactor: 10,
                             alignment: Alignment.bottomCenter,
                             child: UserScrollAnimation(),
@@ -316,80 +323,77 @@ class _HomeScreenState extends State<HomeScreen> {
                       ), 
                     ),
                     
-                      Visibility(
-                        visible: isExtendedWeatherVisible,
-                        maintainState: true,
-                        maintainAnimation: true,
-                        child: Align(
-                          alignment: Alignment.center,
-                          heightFactor: 10,
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            height: 205,
-                            child: ListView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                for (int i = 0; i < dailyWeatherData!.length; i++)
-                                  SizedBox(
-                                    child: Row(
-                                      children: [
-                                        Card(
-                                          elevation: 0,
-                                          color: Colors.transparent,
-                                          child: SizedBox(
-                                            height: 230,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(left: 15, right: 15),
-                                              child: Column(
-                                                children: [
-                                                  Text(_getDayName(DateTime.now().add(Duration(days: i+1)).weekday), style: const TextStyle(fontSize: 20),),
-                                                  Lottie.asset(
-                                                    weatherAnimation(dailyWeatherData![i]['condition']),
-                                                    height: 88,
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  const Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      FaIcon(FontAwesomeIcons.temperatureArrowUp, size: 14,),
-                                                      Text('MAX', style: TextStyle(fontSize: 14)),
-                                                      SizedBox(width: 30),
-                                                      FaIcon(FontAwesomeIcons.temperatureArrowDown, size: 14),
-                                                      Text('MIN', style: TextStyle(fontSize: 14))
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      const SizedBox(width: 10),
-                                                      Text(
-                                                        '${HumanFormat.number(dailyWeatherData![i]['maxTemp'] ?? 0, 1)}°',
-                                                        style: const TextStyle(fontSize: 20),
-                                                      ),
-                                                      const SizedBox(width: 30),
-                                                      Text(
-                                                        '${HumanFormat.number(dailyWeatherData![i]['minTemp'] ?? 0, 1)}°',
-                                                        style: const TextStyle(fontSize: 20),
-                                                      )
-                                                    ],
-                                                  )
-                                                ],
-                                              ),
+                      Align(
+                        alignment: Alignment.center,
+                        heightFactor: 10,
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          height: 205,
+                          child: ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              for (int i = 0; i < dailyWeatherData!.length; i++)
+                                SizedBox(
+                                  child: Row(
+                                    children: [
+                                      Card(
+                                        elevation: 0,
+                                        color: Colors.transparent,
+                                        child: SizedBox(
+                                          height: 230,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(left: 15, right: 15),
+                                            child: Column(
+                                              children: [
+                                                Text(_getDayName(DateTime.now().add(Duration(days: i+1)).weekday), style: const TextStyle(fontSize: 20),),
+                                                Lottie.asset(
+                                                  weatherAnimation(dailyWeatherData![i]['condition']),
+                                                  height: 88,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                const Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    FaIcon(FontAwesomeIcons.temperatureArrowUp, size: 14,),
+                                                    Text('MAX', style: TextStyle(fontSize: 14)),
+                                                    SizedBox(width: 30),
+                                                    FaIcon(FontAwesomeIcons.temperatureArrowDown, size: 14),
+                                                    Text('MIN', style: TextStyle(fontSize: 14))
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    const SizedBox(width: 10),
+                                                    Text(
+                                                      '${HumanFormat.number(dailyWeatherData![i]['maxTemp'] ?? 0, 1)}°',
+                                                      style: const TextStyle(fontSize: 20),
+                                                    ),
+                                                    const SizedBox(width: 30),
+                                                    Text(
+                                                      '${HumanFormat.number(dailyWeatherData![i]['minTemp'] ?? 0, 1)}°',
+                                                      style: const TextStyle(fontSize: 20),
+                                                    )
+                                                  ],
+                                                )
+                                              ],
                                             ),
                                           ),
-                                        )
-                                      ],
-                                    ),
-                                  )
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                )
 
-                              ],
-                            )
+                            ],
+                          )
 
-                          ),
                         ),
-                      )
+                      ),
+
+                      
                     
                   ],
                   
@@ -398,11 +402,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        // floatingActionButton: isScrollingUp && !isExtendedWeatherVisible ? const Align(
-        //   widthFactor: 10,
-        //   alignment: Alignment.bottomCenter,
-        //   child: UserScrollAnimation()
-        // ) : null,
       );
       
     }

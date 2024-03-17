@@ -171,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.transparent,
           actions: [
             IconButton(
-              onPressed: () => context.go('/mapScren'), 
+              onPressed: () => context.push('/mapScren'), 
               icon: const Padding(
                 padding: EdgeInsets.only(right: 20, top: 18),
                 child: Icon(Icons.map_outlined, size: 35),

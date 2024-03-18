@@ -11,7 +11,7 @@ final router = GoRouter(
     ),
 
     GoRoute(
-      path: '/mapScren',
+      path: '/mapScreen',
       builder: (context, state) => const MapAndExtrasScreen(),
     ),
 

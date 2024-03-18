@@ -167,18 +167,18 @@ class _HomeScreenState extends State<HomeScreen> {
         isDay = false;
       }
       return Scaffold (
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          actions: [
-            IconButton(
-              onPressed: () => context.push('/mapScren'), 
-              icon: const Padding(
-                padding: EdgeInsets.only(right: 20, top: 18),
-                child: Icon(Icons.map_outlined, size: 35),
-              )
-            )
-          ],
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(right: 5, top: 20),
+          child: FloatingActionButton(
+            onPressed: () => context.push('/mapScreen'),
+            backgroundColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            elevation: 0,
+            child: const Icon(Icons.map, size: 32),
+        
+          ),
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
         backgroundColor: _weatherBgProvider.setBgColor,
         body: RefreshIndicator(
           key: _refreshIndicatorKey,
@@ -197,6 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          const SizedBox(height: 50),
                           if (isDay == true) 
                           const SizedBox(height: 135),
                           Text(weatherHomeScreen?.cityName ?? '', style: GoogleFonts.inter(
@@ -322,83 +323,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         ]  
                       ), 
                     ),
-                    
-                      Align(
-                        alignment: Alignment.center,
-                        heightFactor: 10,
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          height: 205,
-                          child: ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            scrollDirection: Axis.horizontal,
-                            children: [
-                              for (int i = 0; i < dailyWeatherData!.length; i++)
-                                SizedBox(
-                                  child: Row(
-                                    children: [
-                                      Card(
-                                        elevation: 0,
-                                        color: Colors.transparent,
-                                        child: SizedBox(
-                                          height: 230,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(left: 15, right: 15),
-                                            child: Column(
-                                              children: [
-                                                Text(_getDayName(DateTime.now().add(Duration(days: i+1)).weekday), style: const TextStyle(fontSize: 20),),
-                                                Lottie.asset(
-                                                  weatherAnimation(dailyWeatherData![i]['condition']),
-                                                  height: 88,
-                                                ),
-                                                const SizedBox(height: 10),
-                                                const Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    FaIcon(FontAwesomeIcons.temperatureArrowUp, size: 14,),
-                                                    Text('MAX', style: TextStyle(fontSize: 14)),
-                                                    SizedBox(width: 30),
-                                                    FaIcon(FontAwesomeIcons.temperatureArrowDown, size: 14),
-                                                    Text('MIN', style: TextStyle(fontSize: 14))
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    const SizedBox(width: 10),
-                                                    Text(
-                                                      '${HumanFormat.number(dailyWeatherData![i]['maxTemp'] ?? 0, 1)}°',
-                                                      style: const TextStyle(fontSize: 20),
-                                                    ),
-                                                    const SizedBox(width: 30),
-                                                    Text(
-                                                      '${HumanFormat.number(dailyWeatherData![i]['minTemp'] ?? 0, 1)}°',
-                                                      style: const TextStyle(fontSize: 20),
-                                                    )
-                                                  ],
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                )
 
-                            ],
-                          )
-
-                        ),
-                      ),
-
-                      
-                    
                   ],
                   
                 ),
               ),
+              Align(
+                alignment: Alignment.center,
+                heightFactor: 2.3,
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 205,
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: dailyWeatherData?.length,
+                    itemBuilder: (context, index) {
+                      return weatherTile(index);
+                    },
+                  )
+                ),
+              ),
+              // FloatingActionButton(
+
+              //   onPressed: () {},
+              //   child: const Icon(Icons.map),
+              // )
             ],
           ),
         ),
@@ -407,7 +357,50 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
   }
+  weatherTile(int index) {
+    return Row(
+      children: [
+        Card(
+          elevation: 0,
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 15, right: 15),
+            child: Column(
+              children: [
+                Text(_getDayName(DateTime.now().add(Duration(days: index+1)).weekday), style: const TextStyle(fontSize: 20)),
+                Lottie.asset(
+                  weatherAnimation(dailyWeatherData![index]['condition']),
+                  height: 88
+                ),
+                const SizedBox(height: 10),
+                const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FaIcon(FontAwesomeIcons.temperatureArrowUp, size: 14),
+                    Text('MAX', style: TextStyle(fontSize: 14)),
+                    SizedBox(width: 30),
+                    Text('MIN', style: TextStyle(fontSize: 14))
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(width: 10),
+                    Text('${HumanFormat.number(dailyWeatherData![index]['maxTemp'] ?? 0, 1)}°', style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 30),
+                    Text('${HumanFormat.number(dailyWeatherData![index]['minTemp'] ?? 0, 1)}°', style: const TextStyle(fontSize: 20)),
+                  ],
+                )
+              ],
+            ),
+          )
+        )
+      ],
+    );
+  }
 }
+
 
 String _getDayName(int dayOfWeek) {
   switch (dayOfWeek) {

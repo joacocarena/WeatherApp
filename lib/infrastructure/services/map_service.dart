@@ -31,9 +31,7 @@ class MapService {
     try {
       final response = await http.get(uri);
       if (response.statusCode == 200) {
-        final Uint8List bytes = response.bodyBytes;
-        final file = await _saveImage(bytes, layer);
-        return file.path;
+        return uri.toString();
       } else {
         throw Exception('Failed loading map: ${response.statusCode}');
       }
@@ -57,9 +55,9 @@ class MapService {
   // }
 }
 
-Future<File> _saveImage(Uint8List bytes, String layer) async {
-  final directory = await getApplicationDocumentsDirectory();
-  final file = File('${directory.path}/$layer.png');
-  await file.writeAsBytes(bytes);
-  return file;
-}
+// Future<File> _saveImage(Uint8List bytes, String layer) async {
+//   final directory = await getApplicationDocumentsDirectory();
+//   final file = File('${directory.path}/$layer.png');
+//   await file.writeAsBytes(bytes);
+//   return file;
+// }

@@ -111,7 +111,8 @@ class ShowMapWidget extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) return const CircularProgressIndicator(strokeWidth: 2);
             if (snapshot.hasError) return Text('Error fetching map: ${snapshot.error}');
-            return Image.file(File(snapshot.data!));
+            final String mapUrlToUse = snapshot.data!;
+            return Image.network(mapUrlToUse);
           },
         );
       },
